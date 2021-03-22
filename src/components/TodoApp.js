@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import TodoForm from './TodoForm';
 import TodoList from './TodoList';
 import Footer from './Footer';
-import { saveTodo, loadTodos, destroyTodo } from '../lib/service';
+import { saveTodo, loadTodos, destroyTodo, updateTodo } from '../lib/service';
 
 export default class TodoApp extends Component {
   constructor(props) {
@@ -17,6 +17,7 @@ export default class TodoApp extends Component {
     this.handleNewTodoChange = this.handleNewTodoChange.bind(this);
     this.handleTodoSubmit = this.handleTodoSubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.handleToggle = this.handleToggle.bind(this);
   }
 
   componentDidMount() {
@@ -33,6 +34,21 @@ export default class TodoApp extends Component {
     destroyTodo(todoId).then(() =>
       this.setState({ todos: this.state.todos.filter((t) => t.id !== todoId) })
     );
+  }
+
+  handleToggle(id) {
+    const targetTodo = this.state.todos.find((t) => t.id === id);
+    const updatedTodo = {
+      ...targetTodo,
+      isComplete: !targetTodo.isComplete,
+    };
+
+    updateTodo(updatedTodo).then(({ data }) => {
+      const updatedTodos = this.state.todos.map((t) =>
+        t.id === data.id ? data : t
+      );
+      this.setState({ todos: updatedTodos });
+    });
   }
 
   handleTodoSubmit(evt) {
@@ -66,6 +82,7 @@ export default class TodoApp extends Component {
             <TodoList
               todos={this.state.todos}
               handleDelete={this.handleDelete}
+              handleToggle={this.handleToggle}
             />
           </section>
           <Footer remaining={remaining} />
